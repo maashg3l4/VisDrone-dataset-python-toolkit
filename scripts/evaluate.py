@@ -77,12 +77,10 @@ def parse_args() -> argparse.Namespace:
         "--small-object-threshold",
         type=float,
         default=32,
-        help="Max area (pixels) for small object classification"
+        help="Max area (pixels) for small object classification",
     )
     parser.add_argument(
-        "--benchmark",
-        action="store_true",
-        help="Run inference speed benchmark with percentiles"
+        "--benchmark", action="store_true", help="Run inference speed benchmark with percentiles"
     )
 
     return parser.parse_args()
@@ -92,11 +90,12 @@ def parse_args() -> argparse.Namespace:
 # Small object metrics
 # ---------------------------------------------------------------------------
 
+
 def compute_small_object_metrics(
     predictions: list[dict],
     targets: list[dict],
     iou_threshold: float,
-    small_area_threshold: int = 32
+    small_area_threshold: int = 32,
 ) -> dict[str, float]:
     """
     Compute mAP specifically for small objects (< 32x32 pixels).
@@ -141,8 +140,11 @@ def compute_small_object_metrics(
         for j, pb in enumerate(pred_boxes):
             # Find matching ground truth with same class
             pl = pred_labels[j]
-            matching_gt = [k for k, (gb, gl) in enumerate(zip(small_gt_boxes, small_gt_labels))
-                          if gl == pl and k not in matched_gt]
+            matching_gt = [
+                k
+                for k, (gb, gl) in enumerate(zip(small_gt_boxes, small_gt_labels))
+                if gl == pl and k not in matched_gt
+            ]
 
             if not matching_gt:
                 small_fp += 1
@@ -165,7 +167,11 @@ def compute_small_object_metrics(
     # Compute metrics
     small_precision = small_tp / (small_tp + small_fp) if (small_tp + small_fp) > 0 else 0.0
     small_recall = small_tp / (small_tp + small_fn) if (small_tp + small_fn) > 0 else 0.0
-    small_f1 = 2 * small_precision * small_recall / (small_precision + small_recall) if (small_precision + small_recall) > 0 else 0.0
+    small_f1 = (
+        2 * small_precision * small_recall / (small_precision + small_recall)
+        if (small_precision + small_recall) > 0
+        else 0.0
+    )
 
     return {
         "small_objects_precision": small_precision,
@@ -178,6 +184,7 @@ def compute_small_object_metrics(
 # ---------------------------------------------------------------------------
 # YOLO evaluation path
 # ---------------------------------------------------------------------------
+
 
 def evaluate_yolo(
     checkpoint_path: str,
@@ -245,10 +252,13 @@ def evaluate_yolo(
     if benchmark:
         console.print("\n[bold yellow]Running inference speed benchmark...[/bold yellow]")
         import time
+
         latencies = []
         for _ in range(50):
             start = time.perf_counter()
-            model.predict(source=np.random.randint(0, 255, (640, 640, 3), dtype=np.uint8), verbose=False)
+            model.predict(
+                source=np.random.randint(0, 255, (640, 640, 3), dtype=np.uint8), verbose=False
+            )
             end = time.perf_counter()
             latencies.append((end - start) * 1000)
 
@@ -268,6 +278,7 @@ def evaluate_yolo(
 # ---------------------------------------------------------------------------
 # Torchvision evaluation path
 # ---------------------------------------------------------------------------
+
 
 def load_torchvision_model(
     checkpoint_path: str,
@@ -546,6 +557,7 @@ def _save_json(predictions: list[dict], targets: list[dict], path: Path) -> None
 # Table printing
 # ---------------------------------------------------------------------------
 
+
 def print_metrics_table(model_name: str, metrics: dict[str, Any]) -> None:
     """Print a rich table of evaluation results."""
     console.rule(f"[bold]Evaluation Results — {model_name}[/bold]")
@@ -625,6 +637,7 @@ def print_metrics_table(model_name: str, metrics: dict[str, Any]) -> None:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     args = parse_args()
     output_dir = Path(args.output_dir)
@@ -685,9 +698,7 @@ def main() -> None:
             for cls, mv_dict in metrics["per_class"].items()
         }
     if "benchmark" in metrics:
-        serializable["benchmark"] = {
-            k: float(v) for k, v in metrics["benchmark"].items()
-        }
+        serializable["benchmark"] = {k: float(v) for k, v in metrics["benchmark"].items()}
     with open(metrics_path, "w") as f:
         json.dump(serializable, f, indent=2)
     console.print(f"\n✓ Metrics saved to [bold]{metrics_path}[/bold]")
