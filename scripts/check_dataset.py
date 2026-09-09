@@ -11,7 +11,7 @@ Usage:
 import argparse
 import os
 from pathlib import Path
-from typing import List, Set, Tuple
+from typing import List, Tuple
 
 
 def load_annotation(file_path: str) -> List[List[float]]:
