@@ -63,8 +63,6 @@ class YOLOv8Base(DetectionModel):
         self.format_converter = YOLOFormatConverter()
 
         # Set number of classes
-        if hasattr(self.model.model, "nc"):
-            self.model.model.nc = num_classes
         if hasattr(self.model, "model") and hasattr(self.model.model, "nc"):
             self.model.model.nc = num_classes
 
@@ -158,7 +156,7 @@ class YOLOv8Base(DetectionModel):
 
     def freeze_backbone(self, num_layers: Optional[int] = None) -> None:
         """Freeze backbone layers for fine-tuning."""
-        if hasattr(self.model, "model"):
+        if self.model is not None and hasattr(self.model, "model"):
             backbone = self.model.model
             if hasattr(backbone, "model"):
                 # Freeze backbone

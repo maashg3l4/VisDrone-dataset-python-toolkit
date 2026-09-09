@@ -25,9 +25,9 @@ def load_annotation(file_path: str) -> List[List[float]]:
         List of boxes with [x, y, w, h, class_id]
     """
     boxes = []
-    with open(file_path, 'r') as f:
+    with open(file_path) as f:
         for line in f:
-            parts = line.strip().split(',')
+            parts = line.strip().split(",")
             if len(parts) >= 6:
                 try:
                     x, y, w, h = map(float, parts[:4])
@@ -95,7 +95,7 @@ def check_missing_annotations(images_dir: str, annotations_dir: str) -> List[str
         List of image paths with missing annotations
     """
     image_files: List[Path] = []
-    image_extensions = {'.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG'}
+    image_extensions = {".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"}
 
     for ext in image_extensions:
         image_files.extend(Path(images_dir).glob(f"*{ext}"))
@@ -120,15 +120,9 @@ Examples:
         """,
     )
     parser.add_argument(
-        "-a", "--annotations-dir",
-        required=True,
-        help="Path to annotation directory"
+        "-a", "--annotations-dir", required=True, help="Path to annotation directory"
     )
-    parser.add_argument(
-        "-i", "--images-dir",
-        required=True,
-        help="Path to images directory"
-    )
+    parser.add_argument("-i", "--images-dir", required=True, help="Path to images directory")
 
     args = parser.parse_args()
 
