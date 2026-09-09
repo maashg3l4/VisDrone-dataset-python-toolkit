@@ -21,7 +21,7 @@ Example:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import torch
 import torch.nn as nn
@@ -58,13 +58,13 @@ class DetectionModel(nn.Module, ABC):
         """
         super().__init__()
         self.num_classes = num_classes
-        self.model: nn.Module | None = None  # To be set by subclasses
+        self.model: Optional[nn.Module] = None  # To be set by subclasses
 
     @abstractmethod
     def forward(
         self,
         images: list[torch.Tensor],
-        targets: list[dict[str, torch.Tensor]] | None = None,
+        targets: Optional[list[dict[str, torch.Tensor]]] = None,
     ) -> Any:
         """
         Forward pass for detection model.
@@ -115,7 +115,7 @@ class DetectionModel(nn.Module, ABC):
         """Get number of trainable parameters."""
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
-    def freeze_backbone(self, _num_layers: int | None = None) -> None:
+    def freeze_backbone(self, _num_layers: Optional[int] = None) -> None:
         """
         Freeze backbone layers for fine-tuning.
 
@@ -304,8 +304,8 @@ class TrainingAdapter(ABC):
         images: list[torch.Tensor],
         targets: list[dict[str, torch.Tensor]],
         device: torch.device,
-        optimizer: torch.optim.Optimizer | None = None,
-        scaler: torch.amp.GradScaler | None = None,
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        scaler: Optional[torch.amp.GradScaler] = None,
         use_amp: bool = False,
     ) -> tuple[float, dict[str, float]]:
         """
@@ -506,7 +506,7 @@ def get_model(
     try:
         from visdrone_toolkit.utils import get_model as legacy_get_model
 
-        result: DetectionModel | None = legacy_get_model(
+        result: Optional[DetectionModel] = legacy_get_model(
             model_name=model_name,
             num_classes=num_classes,
             pretrained=pretrained,
@@ -519,7 +519,8 @@ def get_model(
         available_models = ModelRegistry.list_models()
         if available_models:
             raise ValueError(
-                f"Unknown model: {model_name}. " f"Available models: {', '.join(available_models)}"
+                f"Unknown model: {model_name}. "
+                f"Available models: {', '.join(available_models)}"
             ) from e
         raise
 
