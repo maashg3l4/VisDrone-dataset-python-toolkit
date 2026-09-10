@@ -21,7 +21,7 @@ Example:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Callable
 
 import torch
 import torch.nn as nn
@@ -370,7 +370,7 @@ class ModelRegistry:
         _registry: Dictionary mapping model names to model classes
     """
 
-    _registry: dict[str, type[DetectionModel]] = {}
+    _registry: dict[str, Callable[..., DetectionModel]] = {}
 
     @classmethod
     def register(cls, name: str):
@@ -389,9 +389,11 @@ class ModelRegistry:
             ...     pass
         """
 
-        def decorator(model_class: type[DetectionModel]) -> type[DetectionModel]:
-            cls._registry[name.lower()] = model_class
-            return model_class
+        def decorator(
+            model_factory: Callable[..., DetectionModel],
+        ) -> Callable[..., DetectionModel]:
+            cls._registry[name.lower()] = model_factory
+            return model_factory
 
         return decorator
 
@@ -417,8 +419,8 @@ class ModelRegistry:
         if name_lower not in cls._registry:
             available = ", ".join(cls._registry.keys())
             raise ValueError(f"Unknown model: {name}. Available models: {available}")
-        model_class = cls._registry[name_lower]
-        return model_class(**kwargs)
+        model_factory = cls._registry[name_lower]
+        return model_factory(**kwargs)
 
     @classmethod
     def list_models(cls) -> list[str]:
@@ -439,8 +441,8 @@ class ModelRegistry:
         name_lower = name.lower()
         if name_lower not in cls._registry:
             return f"Model {name} not found"
-        model_class = cls._registry[name_lower]
-        return model_class.__doc__ or "No documentation available"
+        model_factory = cls._registry[name_lower]
+        return model_factory.__doc__ or "No documentation available"
 
     @classmethod
     def clear(cls) -> None:
@@ -500,7 +502,12 @@ def get_model(
     """
     # Try ModelRegistry first
     if model_name.lower() in ModelRegistry._registry:
-        return ModelRegistry.get(model_name, num_classes=num_classes, **kwargs)
+        return ModelRegistry.get(
+            model_name,
+            num_classes=num_classes,
+            pretrained=pretrained,
+            **kwargs,
+        )
 
     # Fall back to legacy get_model for backward compatibility
     try:

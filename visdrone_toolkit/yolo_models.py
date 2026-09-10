@@ -32,7 +32,7 @@ class YOLOv8Base(DetectionModel):
     def __init__(
         self,
         num_classes: int = 12,
-        _pretrained: bool = True,
+        pretrained: bool = True,
         device: str = "cuda",
         imgsz: int = 640,
         **_kwargs: Any,
@@ -42,7 +42,7 @@ class YOLOv8Base(DetectionModel):
 
         Args:
             num_classes: Number of detection classes (default: 12 for VisDrone)
-            _pretrained: Load pretrained COCO weights (default: True, unused)
+            pretrained: Load pretrained COCO weights (default: True, unused)
             device: Device to load model on (default: 'cuda')
             imgsz: Input image size (default: 640)
             **_kwargs: Additional arguments for Ultralytics YOLO (unused)
@@ -58,6 +58,7 @@ class YOLOv8Base(DetectionModel):
 
         # Load model
         self.model = YOLO(self.ULTRALYTICS_MODEL)
+        self.pretrained = pretrained
         self.device_name = device
         self.imgsz = imgsz
         self.format_converter = YOLOFormatConverter()
