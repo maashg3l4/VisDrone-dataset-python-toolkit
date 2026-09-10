@@ -133,18 +133,17 @@ def compute_small_object_metrics(
 
         # Get predictions
         pred_boxes = pred.get("boxes", torch.zeros(0, 4)).cpu().numpy()
-        # pred_scores = pred.get("scores", torch.zeros(0)).cpu().numpy()  # commented out per request
+        pred_scores = pred.get("scores", torch.zeros(0)).cpu().numpy()
         pred_labels = pred.get("labels", torch.zeros(0, dtype=torch.long)).cpu().numpy()
 
         # Filter predictions by matching class and confidence
         matched_gt = set()
-        for j, pb in enumerate(pred_boxes):
+        for pb, _ps, pl in zip(pred_boxes, pred_scores, pred_labels):
             # Find matching ground truth with same class
-            pl = pred_labels[j]
             matching_gt = [
-                k
-                for k, (gb, gl) in enumerate(zip(small_gt_boxes, small_gt_labels))
-                if gl == pl and k not in matched_gt
+                j
+                for j, (gb, gl) in enumerate(zip(small_gt_boxes, small_gt_labels))
+                if gl == pl and j not in matched_gt
             ]
 
             if not matching_gt:

@@ -3,6 +3,7 @@
 
 import json
 from pathlib import Path
+
 from rich.console import Console
 from rich.table import Table
 
@@ -13,7 +14,7 @@ def load_benchmarks(benchmark_dir: str = "benchmarks") -> dict:
     """Load all benchmark JSON files."""
     benchmarks = {}
     for file_path in Path(benchmark_dir).glob("*.json"):
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             data = json.load(f)
             benchmarks[data.get("model_name", file_path.stem)] = data
     return benchmarks
